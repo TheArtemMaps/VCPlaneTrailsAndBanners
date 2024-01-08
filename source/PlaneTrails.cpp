@@ -8,13 +8,30 @@
 #include "CTimeCycle.h"
 #include "Utility.h"
 #include "CTxdStore.h"
+#include "CCutsceneMgr.h"
+#include "ePedBones.h"
 #define FIX_BUGS // Undefine to play with bugs
 #define PI (float)M_PI
 #define TWOPI (PI*2)
 #define ARRAY_SIZE(array)                (sizeof(array) / sizeof(array[0]))
 RwTexture* gpBannerTexture;
 // Trails from vc look better in my opinion
+struct tIniData {
+	bool EnableBanners;
+	bool EnableTrails;
+	float Height;
+	int ModelIDForTrails;
+	int ModelIDForBanners;
+	bool ReplaceTrailsInTheSky;
+	float HeightForBanner;
+	bool AppearOnlyAtAltitude;
+	bool AppearWhenPilotIsInside;
+	bool AlwaysAppear;
+	float DrawDistance;
+	float TrailFadeTime;
+};
 
+tIniData Plane;
 CPlaneBanner CPlaneBanners::aArray[50];
 void
 CPlaneBanner::Init(void)
@@ -56,10 +73,10 @@ CPlaneBanner::Render(void)
 	int i;
 	if (m_pos[0].z > -50.0f) {
 		float camDist = (TheCamera.GetPosition() - m_pos[0]).Magnitude();
-		if (TheCamera.IsSphereVisible(m_pos[4], 32.0f) && camDist < 300.0f) {
+		if (TheCamera.IsSphereVisible(m_pos[4], 32.0f) && camDist < Plane.DrawDistance) {
 			TempBufferVerticesStored = 0;
 			TempBufferIndicesStored = 0;
-			int alpha = camDist < 250.0f ? 160 : (300.0f - camDist) / (300.0f - 250.0f) * 160;
+			int alpha = camDist < 250.0f ? 160 : (Plane.DrawDistance - camDist) / (Plane.DrawDistance - 250.0f) * 160;
 
 			TempBufferVerticesStored += 2;
 			RwIm3DVertexSetRGBA(&TempBufferRenderVertices[0], 255, 255, 255, alpha);
@@ -189,7 +206,7 @@ CPlaneTrail2::Render(float visibility)
 		if (time > 30000)
 			m_time[i] = 0;
 		if (m_time[i] != 0) {
-			float fade = (30000.0f - time) / 10000.0f;
+			float fade = (30000.0f - time) / Plane.TrailFadeTime;
 			fade = min(fade, 1.0f);
 			RwIm3DVertexSetRGBA(&TempBufferRenderVertices[numVerts], 255, 255, 255, (int)(alpha * fade));
 			RwIm3DVertexSetPos(&TempBufferRenderVertices[numVerts], m_pos[i].x, m_pos[i].y, m_pos[i].z);
