@@ -10,6 +10,7 @@
 #include "CTxdStore.h"
 #include "CCutsceneMgr.h"
 #include "ePedBones.h"
+#include <game_sa/CGeneral.h>
 #define FIX_BUGS // Undefine to play with bugs
 #define PI (float)M_PI
 #define TWOPI (PI*2)
@@ -29,6 +30,7 @@ struct tIniData {
 	bool AlwaysAppear;
 	float DrawDistance;
 	float TrailFadeTime;
+	float BannerResponseToWind;
 };
 
 tIniData Plane;
@@ -50,6 +52,8 @@ CPlaneBanner::Init(void)
 	gpBannerTexture = RwTextureRead("Banner", NULL);
 	CTxdStore::PopCurrentTxd();
 }
+float GetDefaultTimeStep(void) { return 50.0f / 30.0f; }
+float GetTimeStepFix(void) { return CTimer::ms_fTimeStep / GetDefaultTimeStep(); }
 
 void
 CPlaneBanner::Update(void)
@@ -58,14 +62,21 @@ CPlaneBanner::Update(void)
 	if (m_pos[0].z > -50.0f) {
 		m_pos[0].z -= 0.05f * CTimer::ms_fTimeStep;
 		m_pos[0].z = max(m_pos[0].z, -100.0f);
-		for (i = 1; i < ARRAY_SIZE(m_pos); i++) {
-			CVector dist = m_pos[i] - m_pos[i - 1];
-			float len = dist.Magnitude();
-			if (len > 8.0f)
-				m_pos[i] = m_pos[i - 1] + dist / len * 8.0f;
+		float fWindFactor = CWeather::WindClipped * 0.4f + 0.2f;
+		float fWind = CWeather::Wind * 0.4f + 0.2f;
+		CVector vecWind(0.0f, 0.0f, 0.0f);
+	   vecWind.x = CGeneral::GetRandomNumberInRange(0.75f, 45.25f) * -CWeather::WindDir.x *  fWindFactor * fWind;
+		vecWind.y = CGeneral::GetRandomNumberInRange(0.75f, 45.25f) * -CWeather::WindDir.y * fWindFactor * fWind;
+		vecWind.z = CGeneral::GetRandomNumberInRange(0.75f, 45.25f) * -CWeather::WindDir.z * fWindFactor * fWind;
+		vecWind *= Plane.BannerResponseToWind * GetTimeStepFix();
+			for (i = 1; i < ARRAY_SIZE(m_pos); i++) {
+				CVector dist = m_pos[i] - m_pos[i - 1];
+				float len = dist.Magnitude();
+				if (len > 8.0f)
+					m_pos[i] = m_pos[i - 1] + dist / len * 8.0f + vecWind;
+			}
 		}
 	}
-}
 
 void
 CPlaneBanner::Render(void)

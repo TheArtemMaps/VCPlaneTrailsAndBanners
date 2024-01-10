@@ -29,6 +29,7 @@ extern struct tIniData {
 	bool AlwaysAppear;
 	float DrawDistance;
 	float TrailFadeTime;
+	float BannerResponseToWind;
 };
 
 extern tIniData Plane;
@@ -53,6 +54,7 @@ public:
 			Plane.ModelIDForTrails = ini.ReadInteger("MAIN", "ModelIDForTrail", 577);
 			Plane.ModelIDForBanners = ini.ReadInteger("MAIN", "ModelIDForBanner", 593);
 			Plane.DrawDistance = ini.ReadFloat("MAIN", "BannerDrawDistance", 300.0f);
+			Plane.BannerResponseToWind = ini.ReadFloat("MAIN", "BannerResponseToWind", 0.0025f);
 			if (Plane.ReplaceTrailsInTheSky) {
 				patch::RedirectJump(0x7174F0, CPlaneTrails2::Update);
 			}
@@ -72,6 +74,8 @@ public:
 			Plane.HeightForBanner = ini.ReadFloat("MAIN", "HeightForBanner", 100.0f);
 			Plane.ModelIDForTrails = ini.ReadInteger("MAIN", "ModelIDForTrail", 577);
 			Plane.ModelIDForBanners = ini.ReadInteger("MAIN", "ModelIDForBanner", 593);
+			Plane.DrawDistance = ini.ReadFloat("MAIN", "BannerDrawDistance", 300.0f);
+			Plane.BannerResponseToWind = ini.ReadFloat("MAIN", "BannerResponseToWind", 0.0025f);
 		};
 
 		Events::gameProcessEvent += []() {
