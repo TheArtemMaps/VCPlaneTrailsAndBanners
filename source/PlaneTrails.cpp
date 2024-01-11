@@ -63,20 +63,21 @@ CPlaneBanner::Update(void)
 		m_pos[0].z -= 0.05f * CTimer::ms_fTimeStep;
 		m_pos[0].z = max(m_pos[0].z, -100.0f);
 		float fWindFactor = CWeather::WindClipped * 0.4f + 0.2f;
-		float fWind = CWeather::Wind * 0.4f + 0.2f;
+		float fWind = CWeather::Wind;
 		CVector vecWind(0.0f, 0.0f, 0.0f);
-	   vecWind.x = CGeneral::GetRandomNumberInRange(0.75f, 45.25f) * -CWeather::WindDir.x *  fWindFactor * fWind;
-		vecWind.y = CGeneral::GetRandomNumberInRange(0.75f, 45.25f) * -CWeather::WindDir.y * fWindFactor * fWind;
-		vecWind.z = CGeneral::GetRandomNumberInRange(0.75f, 45.25f) * -CWeather::WindDir.z * fWindFactor * fWind;
+		//vecWind.x = CGeneral::GetRandomNumberInRange(0.75f, 3.25f) * fWind;
+		vecWind.y = CGeneral::GetRandomNumberInRange(0.75f, 3.25f) * fWind;
+		//vecWind.z = CGeneral::GetRandomNumberInRange(0.75f, 45.25f) * -CWeather::WindDir.z * fWindFactor * fWind;
 		vecWind *= Plane.BannerResponseToWind * GetTimeStepFix();
-			for (i = 1; i < ARRAY_SIZE(m_pos); i++) {
-				CVector dist = m_pos[i] - m_pos[i - 1];
-				float len = dist.Magnitude();
-				if (len > 8.0f)
-					m_pos[i] = m_pos[i - 1] + dist / len * 8.0f + vecWind;
-			}
+		for (i = 1; i < ARRAY_SIZE(m_pos); i++) {
+			CVector dist = m_pos[i] - m_pos[i - 1];
+			float len = dist.Magnitude();
+			if (len > 8.0f)
+				m_pos[i] = m_pos[i - 1] + dist / len * 8.0f + vecWind;
 		}
 	}
+}
+
 
 void
 CPlaneBanner::Render(void)
